@@ -8,4 +8,18 @@ wheels/
 
 # Virtual environments
 .venv
+venv
+env
 .env
+
+# Local SQLite databases (memory / state)
+sidekick.db
+sidekick.db-shm
+sidekick.db-wal
+
+# Backup created by project_doctor.py
+.doctor_backup/
+
+# OS / editor cruft
+.DS_Store
+*.swp

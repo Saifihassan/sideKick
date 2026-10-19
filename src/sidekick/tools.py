@@ -1,6 +1,12 @@
+"""LangChain tools used by the sidekick agent.
+
+Provides filesystem tools (read/write/append/list/delete) and web-search
+tools (SearXNG and Tavily). Import ``tools`` for the ready-to-use list.
+"""
+
 import os
 from pathlib import Path
-from typing import Optional
+
 import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
@@ -26,14 +32,14 @@ def read_file(file_path: str) -> str:
             return f"Error: File '{file_path}' does not exist."
         if not path.is_file():
             return f"Error: '{file_path}' is a directory, not a file."
-        
+
         with open(path, "r", encoding="utf-8", errors="replace") as f:
             content = f.read()
         return content
     except PermissionError:
         return f"Error: Permission denied when attempting to read '{file_path}'."
-    except Exception as e:
-        return f"Error reading file '{file_path}': {str(e)}"
+    except OSError as e:
+        return f"Error reading file '{file_path}': {e}"
 
 
 @tool
@@ -52,8 +58,8 @@ def write_file(file_path: str, content: str) -> str:
         return f"Successfully wrote {len(content)} characters to '{file_path}'."
     except PermissionError:
         return f"Error: Permission denied when attempting to write to '{file_path}'."
-    except Exception as e:
-        return f"Error writing to file '{file_path}': {str(e)}"
+    except OSError as e:
+        return f"Error writing to file '{file_path}': {e}"
 
 
 @tool
@@ -72,8 +78,8 @@ def append_file(file_path: str, content: str) -> str:
         return f"Successfully appended {len(content)} characters to '{file_path}'."
     except PermissionError:
         return f"Error: Permission denied when attempting to append to '{file_path}'."
-    except Exception as e:
-        return f"Error appending to file '{file_path}': {str(e)}"
+    except OSError as e:
+        return f"Error appending to file '{file_path}': {e}"
 
 
 @tool
@@ -81,7 +87,7 @@ def list_directory(directory_path: str = ".") -> str:
     """List the contents of a directory, including files and subdirectories.
 
     Args:
-        directory_path: The path to the directory to list (defaults to current directory '.').
+        directory_path: The path to the directory to list (defaults to '.').
     """
     try:
         path = Path(directory_path).expanduser().resolve()
@@ -102,13 +108,13 @@ def list_directory(directory_path: str = ".") -> str:
                 try:
                     size = entry.stat().st_size
                     lines.append(f"  [FILE] {entry.name} ({size} bytes)")
-                except Exception:
+                except OSError:
                     lines.append(f"  [FILE] {entry.name}")
         return "\n".join(lines)
     except PermissionError:
         return f"Error: Permission denied accessing directory '{directory_path}'."
-    except Exception as e:
-        return f"Error listing directory '{directory_path}': {str(e)}"
+    except OSError as e:
+        return f"Error listing directory '{directory_path}': {e}"
 
 
 @tool
@@ -124,13 +130,13 @@ def delete_file(file_path: str) -> str:
             return f"Error: File '{file_path}' does not exist."
         if path.is_dir():
             return f"Error: '{file_path}' is a directory. This tool only deletes files."
-        
+
         path.unlink()
         return f"Successfully deleted file '{file_path}'."
     except PermissionError:
         return f"Error: Permission denied when attempting to delete '{file_path}'."
-    except Exception as e:
-        return f"Error deleting file '{file_path}': {str(e)}"
+    except OSError as e:
+        return f"Error deleting file '{file_path}': {e}"
 
 
 # ============================================================================
@@ -167,7 +173,7 @@ def searxng_search(query: str, max_results: int = 5) -> str:
             content = r.get("content", "")
             output.append(f"{i}. {title}\nURL: {url}\nSnippet: {content}")
         return "\n\n".join(output)
-    except Exception as e:
+    except requests.RequestException as e:
         return f"SearXNG search error: {e}"
 
 
@@ -201,7 +207,7 @@ def tavily_search(query: str, max_results: int = 5) -> str:
             content = r.get("content", "")
             output.append(f"{i}. {title}\nURL: {url}\nSnippet: {content}")
         return "\n\n".join(output)
-    except Exception as e:
+    except requests.RequestException as e:
         return f"Tavily search error: {e}"
 
 
@@ -226,4 +232,3 @@ __all__ = [
     "tavily_search",
     "tools",
 ]
-

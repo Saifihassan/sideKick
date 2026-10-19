@@ -1,16 +1,18 @@
 [project]
 name = "sidekick"
 version = "0.1.0"
-description = "Add your description here"
+description = "A small tool-using LLM agent with a self-critiquing evaluator loop."
 readme = "README.md"
 authors = [
     { name = "Saifihassan", email = "saifihassan656@gmail.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
-    "dotenv>=0.9.9",
+    "python-dotenv>=1.0.0",
     "langchain>=1.4.6",
     "langchain-openai>=1.7.2",
+    "langgraph-checkpoint-sqlite>=3.1.2",
+    "requests>=2.31.0",
 ]
 
 [project.scripts]
